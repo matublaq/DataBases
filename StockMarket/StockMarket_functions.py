@@ -10,7 +10,7 @@ import sqlite3
 #################################Creating StockMarket database tables##########################################
 def create_tables():
     #Connect to the database
-    conn = sqlite3.connect('StockMarket.db')
+    conn = sqlite3.connect('../StockMarket.db')
     cursor = conn.cursor()
 
     #Create companies table
@@ -74,7 +74,7 @@ def insert_company(ticker):
     company_name = company_info['shortName']
 
     #SQL
-    with sqlite3.connect('StockMarket.db', timeout=15) as conn: #Database connection
+    with sqlite3.connect('../StockMarket.db', timeout=15) as conn: #Database connection
         cursor = conn.cursor()
         
         cursor.execute("SELECT id FROM Companies WHERE ticker = ?", (ticker,)) #Is in the database?
@@ -89,7 +89,7 @@ def insert_company(ticker):
 
 #Insert data into Stock_quotes table
 def insert_stock_quotes(company_id):
-    with sqlite3.connect('StockMarket.db', timeout=15) as conn: #Database connection 
+    with sqlite3.connect('../StockMarket.db', timeout=15) as conn: #Database connection 
         cursor = conn.cursor()
         
         cursor.execute("SELECT company_id FROM Stock_quotes WHERE company_id = ?", (company_id,)) #Is in the database?
@@ -113,7 +113,7 @@ def insert_stock_quotes(company_id):
 
 #Update stock quotes
 def update_stock_quotes():
-    conn = sqlite3.connect('StockMarket_test.db')
+    conn = sqlite3.connect('StockMarket_test.db')#'../StockMarket.db'
     cursor = conn.cursor()
 
     companies_df = pd.read_sql_query("SELECT * FROM Companies", conn)
@@ -157,7 +157,7 @@ def update_stock_quotes():
 ###################################Deelete all rows from the tables############################################
 def delete_all():
     #Connect to the database
-    conn = sqlite3.connect('StockMarket.db')
+    conn = sqlite3.connect('../StockMarket.db')
     cursor = conn.cursor()
 
     #Delete all rows from the tables
