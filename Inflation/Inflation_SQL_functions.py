@@ -58,7 +58,7 @@ def update_data(csv_file_path, country):
 
     if country in countries_db_list:
         if (date.today().month >= 5):
-            if not (date.today().year - 1) in years_db:
+            if (date.today().year - 1) in years_db:
                 return "Data is already up to date"
         else:
             if (date.today().year - 2) in years_db:
