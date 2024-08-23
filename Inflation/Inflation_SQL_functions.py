@@ -40,25 +40,36 @@ def create_tables():
     conn.commit()
     conn.close()
 
-def insert_country(csv_file_path, country):
+def update_data(csv_file_path, country):
     df = pd.read_csv(csv_file_path)
     country_dict = {}
-    if country not in df['Country'].values:
-        return f'{country} not found in the dataset'
     
+    ########################################################################
     conn = sqlite3.connect("../Inflation.db")
     cursor = conn.cursor()
+
     countries_db = cursor.execute("SELECT name FROM Countries").fetchall()
+    years_db = cursor.execute("SELECT year FROM Inflation").fetchall()
     countries_db_list = [ i[0] for i in countries_db]
+    years_db = list(set(i[0] for i in years_db))
+
     cursor.close()
+    ########################################################################
+
     if country in countries_db_list:
-        return f'{country} already in the database'
-    
+        if (date.today().month >= 5):
+            if not (date.today().year - 1) in years_db:
+                return "Data is already up to date"
+        else:
+            if (date.today().year - 2) in years_db:
+                return "Data is already up to date"
+
     country_df = df[df['Country'] == country]
     country_dict['Country'] = country_df['Country'].values[0]
     country_dict['Code'] = country_df['Code'].values[0]
     country_dict['year'] = country_df.columns[2:].tolist()
     country_dict['inflation_rate'] = country_df.iloc[0, 2:].tolist()
+    
     #SQL
     with sqlite3.connect("../Inflation.db") as conn:
         cursor = conn.cursor()
