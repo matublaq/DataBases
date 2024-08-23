@@ -44,7 +44,7 @@ def insert_country(csv_file_path, country):
     df = pd.read_csv(csv_file_path)
     country_dict = {}
     if country not in df['Country'].values:
-        return 'Country not found in the dataset'
+        return f'{country} not found in the dataset'
     
     conn = sqlite3.connect("../Inflation.db")
     cursor = conn.cursor()
@@ -52,7 +52,7 @@ def insert_country(csv_file_path, country):
     countries_db_list = [ i[0] for i in countries_db]
     cursor.close()
     if country in countries_db_list:
-        return 'Country already in the database'
+        return f'{country} already in the database'
     
     country_df = df[df['Country'] == country]
     country_dict['Country'] = country_df['Country'].values[0]
