@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import datetime, timedelta
 
 import yfinance as yf
 
@@ -117,49 +118,43 @@ def delete_data():
 ##############################################################################################################
 ###############################################BACKUP#########################################################
 def backup_database(file_path):
-    shutil.copyfile(file_path, file_path[3:-3] + 'backup.db')
+    shutil.copyfile(file_path, file_path[3:-3] + '_backup.db')
 
 ########################################################################################################
 #####################################UPDATE STOCK QUOTES################################################
 #Update stock quotes
-def update_stock_quotes():
-    conn = sqlite3.connect('StockMarket_test.db')#'../StockMarket.db'
+def update_stock_quotes(ticker):
+    conn = sqlite3.connect('StockMarket_backup.db')
     cursor = conn.cursor()
 
-    companies_df = pd.read_sql_query("SELECT * FROM Companies", conn)
-    companies_ids = companies_df['id'].tolist()
+    company_id = pd.read_sql_query(f"SELECT id FROM Companies WHERE ticker = ?", (ticker, ), conn)
+    stock_quotes = pd.read_sql_query(f"SELECT date, open, high, low, close, volume FROM Stock_quotes WHERE company_id = {company_id}", conn)
+        
+    #Day update
+    #stock_quotes = stock_quotes['date'].max()
+    #stock_quotes = datetime.strptime(stock_quotes, '%Y-%m-%d')
+    #stock_quotes = (stock_quotes + timedelta(days=1)).strftime('%Y-%m-%d')
+    stock_quotes_next_day = (datetime.strptime(stock_quotes['date'].max(), '%Y-%m-%d') + timedelta(days=1)).strftime('%Y-%m-%d')
+    today = datetime.today().strftime('%Y-%m-%d')
 
-    for comp_id in companies_ids:
-        ticker = companies_df[companies_df['id'] == comp_id]['ticker'].values[0]
-        stock_quotes = pd.read_sql_query(f"SELECT date, open, high, low, close, volume FROM Stock_quotes WHERE company_id = {comp_id}", conn)
-        if not (stock_quotes.empty):
-            #Day update
-            #stock_quotes = stock_quotes['date'].max()
-            #stock_quotes = datetime.strptime(stock_quotes, '%Y-%m-%d')
-            #stock_quotes = (stock_quotes + timedelta(days=1)).strftime('%Y-%m-%d')
-            stock_quotes_next_day = (datetime.strptime(stock_quotes['date'].max(), '%Y-%m-%d') + timedelta(days=1)).strftime('%Y-%m-%d')
-            today = datetime.today().strftime('%Y-%m-%d')
+    new_data = yf.download(ticker, start=stock_quotes_next_day, end=today)
+    if not new_data.empty:
+        new_data['Company_id'] = company_id
+        new_data.reset_index(inplace=True)
+        new_data = new_data[['Company_id', 'Date', 'Open', 'High', 'Low', 'Close', 'Volume']]
+        new_data['Date'] = new_data['Date'].dt.strftime('%Y-%m-%d') 
 
-            new_data = yf.download(ticker, start=stock_quotes_next_day, end=today)
-            if not new_data.empty:
-                new_data['Company_id'] = comp_id
-                new_data.reset_index(inplace=True)
-                new_data = new_data[['Company_id', 'Date', 'Open', 'High', 'Low', 'Close', 'Volume']]
-                new_data['Date'] = new_data['Date'].dt.strftime('%Y-%m-%d') 
+        tuples_of_data = []
+        for index, row in new_data.iterrows():
+            tuples_of_data.append(tuple(row))
 
-                tuples_of_data = []
-                for index, row in new_data.iterrows():
-                    tuples_of_data.append(tuple(row))
-
-                cursor.executemany('''
-                    INSERT INTO Stock_quotes (company_id, date, open, high, low, close, volume)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
-                ''', tuples_of_data)
-            else:
-                print(f"Ticker {ticker} \n Ultima fecha {stock_quotes['date'].max()} \n Hoy es {today}")
-                pass
-        else:
-            print(f"{ticker} no tiene datos")
+        cursor.executemany('''
+            INSERT INTO Stock_quotes (company_id, date, open, high, low, close, volume)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ''', tuples_of_data)
+    else:
+        print(f"Ticker {ticker} \n Ultima fecha {stock_quotes['date'].max()} \n Hoy es {today}")
+        pass
 
     conn.commit()
     conn.close()
