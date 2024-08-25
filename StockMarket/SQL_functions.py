@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import datetime, timedelta
+from datetime import datetime, timedelta
 
 import yfinance as yf
 
@@ -10,9 +10,9 @@ import shutil
 
 ###############################################################################################################
 #################################Creating StockMarket database tables##########################################
-def create_database():
+def create_database(database_path):
     #Connect to the database
-    conn = sqlite3.connect('../StockMarket.db')
+    conn = sqlite3.connect(database_path)
     cursor = conn.cursor()
 
     #Create companies table
@@ -55,7 +55,8 @@ def create_database():
 
 ########################################################################################################
 #############################Insert data into database##################################################
-def insert_company(ticker):
+def insert_company(ticker, database_path):
+    ticker = ticker.upper()
     company_info = yf.Ticker(ticker).info 
     #Is in yfinance?
     if not company_info or 'shortName' not in company_info:
@@ -63,7 +64,7 @@ def insert_company(ticker):
     
     company_name = company_info['shortName']
     #SQL
-    with sqlite3.connect('../StockMarket.db', timeout=15) as conn: #Database connection
+    with sqlite3.connect(database_path, timeout=15) as conn: #Database connection
         cursor = conn.cursor()
         
         #Is in the database?
@@ -91,9 +92,9 @@ def insert_company(ticker):
 
 ###############################################################################################################
 ###################################Deelete all rows from the tables############################################
-def delete_database():
+def delete_database(database_path):
     #Connect to the database
-    conn = sqlite3.connect('../StockMarket.db')
+    conn = sqlite3.connect(database_path)
     cursor = conn.cursor()
     
     #Drop tables
@@ -105,15 +106,35 @@ def delete_database():
     conn.commit()
     conn.close()
 
-def delete_data():
+def delete_data(database_name):
     #Connect to the database
-    conn = sqlite3.connect('../StockMarket.db')
+    conn = sqlite3.connect(database_name)
     cursor = conn.cursor()
 
     #Delete all rows from the tables
     cursor.execute("DELETE FROM Companies")
     cursor.execute("DELETE FROM Stock_quotes")
     cursor.execute("DELETE FROM Idx")
+
+def delete_company(ticker, database_path):
+    ticker = ticker.upper()
+
+    #Connect to the database
+    conn = sqlite3.connect(database_path)
+    cursor = conn.cursor()
+
+    #Get company id
+    cursor.execute("SELECT id FROM Companies WHERE ticker = ?", (ticker,))
+    result = cursor.fetchone()[0]
+    if not result:
+        return f"El ticker {ticker} no está en la base de datos"
+    #Delete data
+    cursor.execute("DELETE FROM Companies WHERE id = ?", (result,))
+    cursor.execute("DELETE FROM Stock_quotes WHERE company_id = ?", (result,))
+
+    #Confirm change and close connection
+    conn.commit()
+    conn.close()
 
 ##############################################################################################################
 ###############################################BACKUP#########################################################
@@ -123,8 +144,8 @@ def backup_database(file_path):
 ########################################################################################################
 #####################################UPDATE STOCK QUOTES################################################
 #Update stock quotes
-def update_stock_quotes(ticker):
-    conn = sqlite3.connect('StockMarket_backup.db')
+def update_stock_quotes(ticker, database_path):
+    conn = sqlite3.connect(database_path)
     cursor = conn.cursor()
 
     company_id = pd.read_sql_query(f"SELECT id FROM Companies WHERE ticker = ?", (ticker, ), conn)
