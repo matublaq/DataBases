@@ -145,10 +145,12 @@ def backup_database(file_path):
 #####################################UPDATE STOCK QUOTES################################################
 #Update stock quotes
 def update_stock_quotes(ticker, database_path):
+    ticker = ticker.upper()
     conn = sqlite3.connect(database_path)
     cursor = conn.cursor()
 
-    company_id = pd.read_sql_query(f"SELECT id FROM Companies WHERE ticker = ?", (ticker, ), conn)
+    company_id = pd.read_sql_query("SELECT id FROM Companies WHERE ticker = ?", conn, params=(ticker, ))
+    company_id = company_id['id'][0] 
     stock_quotes = pd.read_sql_query(f"SELECT date, open, high, low, close, volume FROM Stock_quotes WHERE company_id = {company_id}", conn)
         
     #Day update
@@ -168,7 +170,7 @@ def update_stock_quotes(ticker, database_path):
         tuples_of_data = []
         for index, row in new_data.iterrows():
             tuples_of_data.append(tuple(row))
-
+        print(tuples_of_data)
         cursor.executemany('''
             INSERT INTO Stock_quotes (company_id, date, open, high, low, close, volume)
             VALUES (?, ?, ?, ?, ?, ?, ?)
