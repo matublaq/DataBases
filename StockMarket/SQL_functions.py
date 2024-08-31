@@ -181,3 +181,15 @@ def update_stock_quotes(ticker, database_path):
 
     conn.commit()
     conn.close()
+
+#Update all tickers
+def update_all_stock_quotes(database):
+    conn = sqlite3.connect(database)
+    
+    tickers = pd.read_csv('tickers_backup.csv')
+    tickers = list(tickers['ticker'])
+    for ticker in tickers:
+        update_stock_quotes(ticker, database)
+    
+    conn.close()
+    return f"Tickers updated \n {tickers}"
