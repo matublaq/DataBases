@@ -81,7 +81,8 @@ def insert_company(ticker, database_path):
         cursor.execute("SELECT ticker FROM Companies WHERE id = ?", (company_id,))
         ticker = cursor.fetchone()[0]
         #Download stock data
-        data = yf.download(ticker)    
+        data = yf.download(ticker)
+        data = data.round(3)
 
         #Insert data into Stock_quotes table
         for date, row in data.iterrows():
@@ -161,6 +162,7 @@ def update_stock_quotes(ticker, database_path):
     today = datetime.today().strftime('%Y-%m-%d')
 
     new_data = yf.download(ticker, start=stock_quotes_next_day, end=today)
+    new_data = new_data.round(3)
     if not new_data.empty:
         new_data['Company_id'] = company_id
         new_data.reset_index(inplace=True)
