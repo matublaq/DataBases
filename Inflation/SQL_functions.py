@@ -81,25 +81,28 @@ def update_data(csv_file_path):
     df = pd.read_csv(csv_file_path)
     
     ########################################################################
-    #Get countries and years from the database
-    conn = sqlite3.connect("../Inflation.db")
-    cursor = conn.cursor()
+    try: 
+        #Get countries and years from the database
+        conn = sqlite3.connect("../Inflation.db")
+        cursor = conn.cursor()
 
-    countries_db = cursor.execute("SELECT name FROM Countries").fetchall()
-    years_db = cursor.execute("SELECT year FROM Inflation").fetchall()
-    countries_db_list = [ i[0] for i in countries_db]
-    years_db = list(set(i[0] for i in years_db))
+        countries_db = cursor.execute("SELECT name FROM Countries").fetchall()
+        countries_db_list = [ i[0] for i in countries_db]
+        years_db = cursor.execute("SELECT year FROM Inflation").fetchall()
+        years_db = list(set(i[0] for i in years_db))
 
-    cursor.close()
+        cursor.close()
+
+        if country in countries_db_list:
+            if (date.today().month >= 5):
+                if (date.today().year - 1) in years_db:
+                    return "Data is already up to date"
+            else:
+                if (date.today().year - 2) in years_db:
+                    return "Data is already up to date"
+    except:
+        pass
     ########################################################################
-
-    if country in countries_db_list:
-        if (date.today().month >= 5):
-            if (date.today().year - 1) in years_db:
-                return "Data is already up to date"
-        else:
-            if (date.today().year - 2) in years_db:
-                return "Data is already up to date"
     
     delete_database()
     create_database()
@@ -108,7 +111,7 @@ def update_data(csv_file_path):
         cursor = conn.cursor()
 
         country_dict = {}
-        for country in countries_db_list:
+        for country in df['Country'].unique():
 
             country_df = df[df['Country'] == country]
             country_dict['Country'] = country_df['Country'].values[0]
