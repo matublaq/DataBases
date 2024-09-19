@@ -88,6 +88,10 @@ def insert_company(ticker, database_path):
         for date, row in data.iterrows():
             cursor.execute("INSERT INTO Stock_quotes  (company_id, date, open, high, low, close, volume) VALUES (?, ?, ?, ?, ?, ?, ?)", 
                                                         (company_id, date.strftime('%Y-%m-%d'), row['Open'], row['High'], row['Low'], row['Close'], row['Volume']))
+        #Today's date? If yes, delete
+        if date.strftime('%Y-%m-%d') == datetime.today().strftime('%Y-%m-%d'):
+            cursor.execute("DELETE FROM Stock_quotes WHERE date = ?", (date.strftime('%Y-%m-%d'),))
+
         conn.commit()
         return f"{ticker} ha sido agregado a la base de datos"
 
