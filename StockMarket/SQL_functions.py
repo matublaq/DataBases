@@ -20,7 +20,9 @@ def create_database(database_path):
     CREATE TABLE IF NOT EXISTS Companies (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT NOT NULL,
-                    ticker TEXT NOT NULL UNIQUE
+                    ticker TEXT NOT NULL UNIQUE, 
+                    market TEXT NOT NULL, 
+                    sector TEXT NOT NULL 
                     )
     ''')
 
@@ -62,7 +64,6 @@ def insert_company(ticker, database_path):
     if not company_info or 'shortName' not in company_info:
         return f"El ticker {ticker} no está en yfinance"
     
-    company_name = company_info['shortName']
     #SQL
     with sqlite3.connect(database_path, timeout=15) as conn: #Database connection
         cursor = conn.cursor()
@@ -73,10 +74,10 @@ def insert_company(ticker, database_path):
         if result: #Yes
             company_id = result[0]
             return f"El ticker {ticker} ya esta en la base de datos"
-        else: #No
-            cursor.execute("INSERT INTO Companies (name, ticker) VALUES (?, ?)", (company_name, ticker))
+        else: #No. Inter into Companies table
+            cursor.execute("INSERT INTO Companies (name, ticker, market, sector) VALUES (?, ?, ?, ?)", (company_info['shortName'], ticker, company_info['exchange'], company_info['sector']))
             company_id = cursor.lastrowid
-        
+
         #Get ticker from Companies table
         cursor.execute("SELECT ticker FROM Companies WHERE id = ?", (company_id,))
         ticker = cursor.fetchone()[0]
@@ -140,6 +141,12 @@ def delete_company(ticker, database_path):
     #Confirm change and close connection
     conn.commit()
     conn.close()
+
+###############################################RESTART DATABASE###############################################################
+def restart_database(database_path):
+    delete_database(database_path)
+    create_database(database_path)
+    return f"Database {database_path} restarted"
 
 ##############################################################################################################
 ###############################################BACKUP#########################################################
