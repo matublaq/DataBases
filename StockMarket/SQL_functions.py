@@ -82,13 +82,13 @@ def insert_company(ticker, database_path):
         cursor.execute("SELECT ticker FROM Companies WHERE id = ?", (company_id,))
         ticker = cursor.fetchone()[0]
         #Download stock data
-        data = yf.download(ticker)
+        data = yf.download(ticker, start="1800-01-01", end=datetime.today().date() - timedelta(days=1), interval="1d")
         data = data.round(3)
 
         #Insert data into Stock_quotes table
         for date, row in data.iterrows():
             cursor.execute("INSERT INTO Stock_quotes  (company_id, date, open, high, low, close, volume) VALUES (?, ?, ?, ?, ?, ?, ?)", 
-                                                        (company_id, date.strftime('%Y-%m-%d'), row['Open'], row['High'], row['Low'], row['Close'], row['Volume']))
+                                                        (company_id, date.strftime('%Y-%m-%d'), row['Open'][0], row['High'][0], row['Low'][0], row['Close'][0], row['Volume'][0]))
         #Today's date? If yes, delete
         if date.strftime('%Y-%m-%d') == datetime.today().strftime('%Y-%m-%d'):
             cursor.execute("DELETE FROM Stock_quotes WHERE date = ?", (date.strftime('%Y-%m-%d'),))

@@ -1,0 +1,5 @@
+Para cargar el entorno virtual se deberá de ejecutar el comando en el CMD o terminal: 
+
+macOS/Linux: source venv_ddbb_macos/bin/activate
+
+Windows: venv_ddbb_windows/scripts/activate
