@@ -1,0 +1,45 @@
+{
+  "id": "6897b176546b47608f28cf04090a6462",
+  "perspectiveSettings": {
+    "grid": {
+      "settingsKey": "tsPerspectiveGrid",
+      "orderBy": true,
+      "sortBy": "byName",
+      "layoutType": "grid",
+      "singleClickAction": "openInternal",
+      "entrySize": "small",
+      "thumbnailMode": "contain",
+      "showDirectories": true,
+      "showDetails": true,
+      "showDescription": false,
+      "showEntriesDescription": true,
+      "showTags": true,
+      "gridPageLimit": 100,
+      "maxVisibleTags": 4,
+      "maxDescriptionPreviewLength": 100
+    }
+  },
+  "customOrder": {
+    "folders": [
+      {
+        "uuid": "4714e1d0a0304c4f9ba82bfdbf4f1dfc",
+        "name": "Inflation"
+      },
+      {
+        "uuid": "75d4847a104543b29c7cd8ec9b4658c7",
+        "name": "StockMarket"
+      },
+      {
+        "uuid": "0dc29ab6e0da4203b8d573052b8e2f2a",
+        "name": "venv_ddbb_macos"
+      }
+    ]
+  },
+  "tags": [
+    {
+      "title": "SQLite3",
+      "color": "#61DD61",
+      "textcolor": "white"
+    }
+  ]
+}
