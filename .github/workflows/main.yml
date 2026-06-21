@@ -1,0 +1,25 @@
+name: Sync to Hugging Face Spaces
+
+on:
+  push:
+    branches: [main] # Cambia "main" por "master" si tu rama principal se llama así
+
+  # Te permite ejecutar esta acción manualmente desde la pestaña Actions de GitHub
+  workflow_dispatch:
+
+jobs:
+  sync-to-hub:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Push to HF
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          git remote add hf https://matublaq:$HF_TOKEN@huggingface.co/spaces/matublaq/Databases
+          git push --force hf main

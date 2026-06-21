@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import openpyxl
 import sqlite3
-import psycopg2
+# import psycopg2
 import shutil
 #--- Web scriping ---
 import requests
